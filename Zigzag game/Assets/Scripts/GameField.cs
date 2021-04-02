@@ -5,9 +5,10 @@ using UnityEngine;
 public class GameField : MonoBehaviour
 {
     [SerializeField] Cube cubePrefab;
-    
     public List<Cube> cubePool;
+    
     Cube currentCube;
+    Cube[] cubeArray;
     static GameField instance;
 
     public static GameField Instance
@@ -25,6 +26,7 @@ public class GameField : MonoBehaviour
     void Start()
     {
         cubePool = PregenerateCubePool(30);
+        cubeArray = new Cube[5];
 
         for (int x = 0; x < 3; x++)
         {
@@ -48,7 +50,6 @@ public class GameField : MonoBehaviour
             cube.gameObject.SetActive(false);
             cubePool.Add(cube);
         }
-
         return cubePool;
     }
 
@@ -91,5 +92,11 @@ public class GameField : MonoBehaviour
         cubePool.Add(newCube);
 
         return newCube;
+    }
+
+    void ActivateCollectableAtRandomCube()
+    {
+        int randomIndex = Random.Range(0, cubeArray.Length);
+        cubeArray[randomIndex].ActivateCollectable();
     }
 }

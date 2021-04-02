@@ -5,6 +5,8 @@ using UnityEngine;
 public class Cube : MonoBehaviour
 {
     [SerializeField] float fallingDelay = 1f;
+    [SerializeField] GameObject collectable;
+
     public float xPos;
     public float zPos;
     void Start()
@@ -39,5 +41,10 @@ public class Cube : MonoBehaviour
         GetComponent<Rigidbody>().isKinematic = false;
         yield return new WaitForSeconds(fallingDelay);
         gameObject.SetActive(false);
+    }
+
+    public void ActivateCollectable()
+    {
+        collectable.SetActive(true);
     }
 }

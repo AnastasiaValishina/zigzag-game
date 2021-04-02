@@ -8,6 +8,18 @@ public class Cube : MonoBehaviour
     [SerializeField] GameObject collectable;
     public int orderNumber;
 
+    private void Start()
+    {
+        Player.onGameOver += Reset;
+    }
+
+    private void Reset()
+    {
+        GetComponent<Rigidbody>().isKinematic = true;
+        transform.localScale = new Vector3(1f, 3f, 1f);
+        gameObject.SetActive(false);
+    }
+
     void Update()
     {
         
@@ -31,6 +43,7 @@ public class Cube : MonoBehaviour
         GetComponent<Rigidbody>().isKinematic = false;
         yield return new WaitForSeconds(fallingDelay);
         GetComponent<Rigidbody>().isKinematic = true;
+        transform.localScale = new Vector3(1f, 3f, 1f);
         gameObject.SetActive(false);
     }
 

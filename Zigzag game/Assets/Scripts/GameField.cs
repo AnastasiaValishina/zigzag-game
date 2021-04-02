@@ -23,9 +23,19 @@ public class GameField : MonoBehaviour
         }
     }
 
-    void Start()
+    private void Reset()
+    {
+        cubePool.Clear();
+        SetStartingCubes();
+    }
+
+    private void SetStartingCubes()
     {
         cubePool = PregenerateCubePool(30);
+
+        Cube startingPlatform = CreateCubeAt(-2, -1);
+        startingPlatform.gameObject.SetActive(true);
+        startingPlatform.transform.localScale = new Vector3(3, 3, 3);
 
         CreateCubeAt(0, 0);
 
@@ -33,6 +43,15 @@ public class GameField : MonoBehaviour
         {
             CreateFiveCubes();
         }
+    }
+
+    void Start()
+    {
+   //     cubePool = PregenerateCubePool(30);
+
+        SetStartingCubes();
+
+        Player.onGameOver += Reset;
     }
 
     List<Cube> PregenerateCubePool(int amountOfCubes)
@@ -63,6 +82,7 @@ public class GameField : MonoBehaviour
     }
 
 
+
     Cube CreateCubeAt(float x, float z)
     {
         Cube cube = RequestCubeFromPool();
@@ -80,7 +100,6 @@ public class GameField : MonoBehaviour
     Cube CreateCubeInRandomDirection()
     {
         int randomDirectionIndex = Random.Range(0, 2);
-        Debug.Log("randomDirectionIndex " + randomDirectionIndex);
         if (randomDirectionIndex == 0)
         {
             Cube cube = CreateCubeAt(currentCube.transform.position.x + 1, currentCube.transform.position.z);

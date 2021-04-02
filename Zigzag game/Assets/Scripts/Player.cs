@@ -11,6 +11,9 @@ public class Player : MonoBehaviour
     Vector3 direction;
     CollectablesController collectablesController;
 
+    public delegate void GameOver();
+    public static event GameOver onGameOver;
+
     void Start()
     {
         direction = Vector3.zero;
@@ -27,7 +30,13 @@ public class Player : MonoBehaviour
         }
         if (Input.GetMouseButtonDown(0) && !isAlive)
         {
-            SceneManager.LoadScene(0);
+            if (onGameOver != null)
+            {
+                onGameOver();
+                direction = Vector3.zero;
+                transform.position = new Vector3(-3f, 1.75f, -2f);
+                isAlive = true;
+            }
         }
         if (transform.position.y < 0)
         {

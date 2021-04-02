@@ -1,17 +1,20 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
     [SerializeField] float moveSpeed = 3f;
+    public bool isAlive = true;
 
     Vector3 direction;
-    bool isAlive = true;
+    CollectablesController collectablesController;
 
     void Start()
     {
         direction = Vector3.zero;
+        collectablesController = FindObjectOfType<CollectablesController>();
     }
 
     void Update()
@@ -22,10 +25,14 @@ public class Player : MonoBehaviour
         {
             ChangeDirection();
         }
-     /*   if (Input.GetMouseButtonDown(0) && !isAlive)
+        if (Input.GetMouseButtonDown(0) && !isAlive)
         {
-            RestartGame();
-        }*/
+            SceneManager.LoadScene(0);
+        }
+        if (transform.position.y < 0)
+        {
+            isAlive = false;
+        }
     }
 
     private void ChangeDirection()
@@ -45,24 +52,7 @@ public class Player : MonoBehaviour
         if (other.tag == "Collectable")
         {
             other.gameObject.SetActive(false);
+            collectablesController.AddCollectable();
         }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.tag == "Cube")
-        {
-            RaycastHit raycastHit;
-            Ray ray = new Ray(transform.position, Vector3.down);
-
-            if (!Physics.Raycast(ray, out raycastHit))
-            {
-                isAlive = false;
-                if (transform.GetChild(0))
-                {
-                    transform.GetChild(0).transform.parent = null;
-                }
-            }
-        }
-    }
+    }    
 }

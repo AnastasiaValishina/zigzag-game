@@ -6,9 +6,9 @@ public class GameField : MonoBehaviour
 {
     [SerializeField] Cube cubePrefab;
     public List<Cube> cubePool;
-    
+    public int cubeIndex = 0;
+
     Cube currentCube;
-    Cube[] cubeArray;
     static GameField instance;
 
     public static GameField Instance
@@ -26,18 +26,12 @@ public class GameField : MonoBehaviour
     void Start()
     {
         cubePool = PregenerateCubePool(30);
-        cubeArray = new Cube[5];
 
-        for (int x = 0; x < 3; x++)
+        CreateCubeAt(0, 0);
+
+        for (int i = 0; i < 5; i++)
         {
-            for (int z = 0; z < 3; z++)
-            {
-                CreateCubeAt(x, z);
-            }
-        }
-        for (int i = 0; i < 20; i++)
-        {
-            CreateCubeInRandomDirection();
+            CreateFiveCubes();
         }
     }
 
@@ -53,27 +47,51 @@ public class GameField : MonoBehaviour
         return cubePool;
     }
 
+    public Cube[] CreateFiveCubes()
+    {
+        Cube[] cubeArray = new Cube[5];
 
-    void CreateCubeAt(float x, float z)
+        for (int i = 0; i < cubeArray.Length; i++)
+        {
+            Cube cube = CreateCubeInRandomDirection();
+            cubeArray[i] = cube;
+        }
+        int randomIndex = Random.Range(0, cubeArray.Length);
+        cubeArray[randomIndex].ActivateCollectable();
+
+        return cubeArray;
+    }
+
+
+    Cube CreateCubeAt(float x, float z)
     {
         Cube cube = RequestCubeFromPool();
         cube.transform.position = new Vector3(x, 0f, z);
         cube.transform.parent = transform;
         cube.name = "(x" + x + ", z" + z + " )";
+        cube.orderNumber = cubeIndex;
+        cubeIndex++;
+        if (cubeIndex == 5) { cubeIndex = 0; }       
         currentCube = cube;
-                                //   currentCube.SetPositon(x, z);
+
+        return cube;
     }
 
-    public void CreateCubeInRandomDirection()
+    Cube CreateCubeInRandomDirection()
     {
         int randomDirectionIndex = Random.Range(0, 2);
-        switch (randomDirectionIndex)
+        Debug.Log("randomDirectionIndex " + randomDirectionIndex);
+        if (randomDirectionIndex == 0)
         {
-            case 0: CreateCubeAt(currentCube.transform.position.x + 1, currentCube.transform.position.z);
-                break;
-            case 1: CreateCubeAt(currentCube.transform.position.x, currentCube.transform.position.z + 1);
-                break;
+            Cube cube = CreateCubeAt(currentCube.transform.position.x + 1, currentCube.transform.position.z);
+            return cube;
         }
+        else if (randomDirectionIndex == 1)
+        {
+            Cube cube = CreateCubeAt(currentCube.transform.position.x, currentCube.transform.position.z + 1);
+            return cube;
+        }
+        return null;
     }
 
     Cube RequestCubeFromPool()
@@ -89,14 +107,9 @@ public class GameField : MonoBehaviour
 
         Cube newCube = Instantiate(cubePrefab);
         newCube.transform.parent = transform;
+        newCube.gameObject.SetActive(true);
         cubePool.Add(newCube);
 
         return newCube;
-    }
-
-    void ActivateCollectableAtRandomCube()
-    {
-        int randomIndex = Random.Range(0, cubeArray.Length);
-        cubeArray[randomIndex].ActivateCollectable();
     }
 }

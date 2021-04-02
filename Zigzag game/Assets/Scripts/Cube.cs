@@ -6,20 +6,7 @@ public class Cube : MonoBehaviour
 {
     [SerializeField] float fallingDelay = 1f;
     [SerializeField] GameObject collectable;
-
-    public float xPos;
-    public float zPos;
-    void Start()
-    {
-        xPos = transform.position.x;
-        zPos = transform.position.z;
-    }
-
-    public void SetPositon(float x, float z)
-    {
-        xPos = x;
-        zPos = z;
-    }
+    public int orderNumber;
 
     void Update()
     {
@@ -30,7 +17,10 @@ public class Cube : MonoBehaviour
     {
         if (other.tag == "Player")
         {
-            GameField.Instance.CreateCubeInRandomDirection();
+            if (orderNumber == 0)
+            {
+                GameField.Instance.CreateFiveCubes();
+            }
             StartCoroutine(FallDown());
         }
     }
@@ -40,6 +30,7 @@ public class Cube : MonoBehaviour
         yield return new WaitForSeconds(fallingDelay);
         GetComponent<Rigidbody>().isKinematic = false;
         yield return new WaitForSeconds(fallingDelay);
+        GetComponent<Rigidbody>().isKinematic = true;
         gameObject.SetActive(false);
     }
 

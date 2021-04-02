@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Cube : MonoBehaviour
 {
+    [SerializeField] float fallingDelay = 1f;
     public float xPos;
     public float zPos;
     void Start()
@@ -28,6 +29,15 @@ public class Cube : MonoBehaviour
         if (other.tag == "Player")
         {
             GameField.Instance.CreateCubeInRandomDirection();
+            StartCoroutine(FallDown());
         }
+    }
+
+    IEnumerator FallDown()
+    {
+        yield return new WaitForSeconds(fallingDelay);
+        GetComponent<Rigidbody>().isKinematic = false;
+        yield return new WaitForSeconds(fallingDelay);
+        gameObject.SetActive(false);
     }
 }

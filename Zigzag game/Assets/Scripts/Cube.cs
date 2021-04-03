@@ -31,7 +31,8 @@ public class Cube : MonoBehaviour
         {
             if (orderNumber == 0)
             {
-                GameField.Instance.CreateFiveCubes();
+                GameField.Instance.GenerateFiveOfFive();
+
             }
             StartCoroutine(FallDown());
         }

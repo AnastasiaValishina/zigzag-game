@@ -1,9 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class GameField : MonoBehaviour
 {
+    public enum Difficulty
+    {
+        easy,
+        normal,
+        hard
+    }
+
+    public Difficulty currentDifficulty;
+
     [SerializeField] Cube cubePrefab;
     public List<Cube> cubePool;
     public int cubeIndex = 0;
@@ -39,15 +49,15 @@ public class GameField : MonoBehaviour
 
         CreateCubeAt(0, 0);
 
-        for (int i = 0; i < 5; i++)
-        {
-            CreateFiveCubes();
-        }
+        /*   for (int i = 0; i < 6; i++)
+           {
+               CreateFiveCubes();
+           }*/
+        GenerateFiveOfFive();
     }
 
     void Start()
     {
-   //     cubePool = PregenerateCubePool(30);
 
         SetStartingCubes();
 
@@ -75,15 +85,59 @@ public class GameField : MonoBehaviour
             Cube cube = CreateCubeInRandomDirection();
             cubeArray[i] = cube;
         }
-        int randomIndex = Random.Range(0, cubeArray.Length);
-        cubeArray[randomIndex].ActivateCollectable();
+
+
+
+
+      //  int randomIndex = Random.Range(0, cubeArray.Length);
+      //  cubeArray[randomIndex].ActivateCollectable();
 
         return cubeArray;
     }
 
+    public void PutCristalsInSequence(int i)
+    {
+        int index = 0;
+        Cube[] cubeArray = CreateFiveCubes();
+        switch (i)
+        {
+            case 0: cubeArray[0].ActivateCollectable();
+                index++;
+                break;
+            case 1: cubeArray[1].ActivateCollectable();
+                index++;
+                break;
+            case 2: cubeArray[2].ActivateCollectable();
+                index++;
+                break;
+            case 3: cubeArray[3].ActivateCollectable();
+                index++;
+                break;
+            case 4: cubeArray[4].ActivateCollectable();
+                index++;
+                break;
+        }
+    }
+
+    public void GenerateFiveOfFive()
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            PutCristalsInSequence(i);
+        }
+    }
 
 
     Cube CreateCubeAt(float x, float z)
+    {
+        Cube cube = CreateCube(x, z);
+ 
+        currentCube = cube;
+
+        return cube;
+    }
+
+    public Cube CreateCube(float x, float z)
     {
         Cube cube = RequestCubeFromPool();
         cube.transform.position = new Vector3(x, 0f, z);
@@ -91,8 +145,7 @@ public class GameField : MonoBehaviour
         cube.name = "(x" + x + ", z" + z + " )";
         cube.orderNumber = cubeIndex;
         cubeIndex++;
-        if (cubeIndex == 5) { cubeIndex = 0; }       
-        currentCube = cube;
+        if (cubeIndex == 5) { cubeIndex = 0; }
 
         return cube;
     }
@@ -103,12 +156,34 @@ public class GameField : MonoBehaviour
         if (randomDirectionIndex == 0)
         {
             Cube cube = CreateCubeAt(currentCube.transform.position.x + 1, currentCube.transform.position.z);
+            if (currentDifficulty == Difficulty.normal)
+            {
+                CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 1);
+            }
+            
+            if (currentDifficulty == Difficulty.hard)
+            {
+                CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 1);
+                CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 2);
+            }
             return cube;
         }
         else if (randomDirectionIndex == 1)
         {
             Cube cube = CreateCubeAt(currentCube.transform.position.x, currentCube.transform.position.z + 1);
-            return cube;
+            if (currentDifficulty == Difficulty.normal)
+            {
+                CreateCube(currentCube.transform.position.x - 1, currentCube.transform.position.z);
+            }
+            if (currentDifficulty == Difficulty.hard)
+            {
+                CreateCube(currentCube.transform.position.x - 1, currentCube.transform.position.z);
+                CreateCube(currentCube.transform.position.x - 2, currentCube.transform.position.z);
+            }
+            else
+            {
+                return cube;
+            }
         }
         return null;
     }

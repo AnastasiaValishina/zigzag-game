@@ -4,30 +4,28 @@ using UnityEngine;
 
 public class GameField : MonoBehaviour
 {
-    public enum Difficulty
+ /*   public enum Difficulty
     {
         easy,
         normal,
         hard
     }
-    [SerializeField] Difficulty currentDifficulty;
+    public  Difficulty currentDifficulty;*/
 
     public enum CollectableGeneration
     {
         random,
         inOrder
     }
-    [SerializeField] CollectableGeneration currentType;
+    [SerializeField] CollectableGeneration collectablesGeneration;
 
     [SerializeField] Cube cubePrefab;
+    
     public List<Cube> cubePool;
-    public int cubeIndex = 0;
-    public List<Cube> randomPool;
-
+    public List<Cube> collectablesPool;
     int orderIndex = 0;
     Cube currentCube;
     static GameField instance;
-
     public static GameField Instance
     {
         get
@@ -42,8 +40,10 @@ public class GameField : MonoBehaviour
 
     void Start()
     {
-        SetStartingCubes();
+    //    SetStartingCubes();
         Player.onGameOver += ResetGame;
+        UIController.onStartGame += SetStartingCubes;
+
     }
 
     private void SetStartingCubes()
@@ -60,10 +60,10 @@ public class GameField : MonoBehaviour
             }
         }
 
-           for (int i = 0; i < 20; i++)
-           {
-               CreateCubeInRandomDirection();
-           }
+        for (int i = 0; i < 20; i++)
+        {
+           CreateCubeInRandomDirection();
+        }
     }
 
 
@@ -81,44 +81,43 @@ public class GameField : MonoBehaviour
 
     void ActivateCollectables()
     {
-        switch (currentType)
+        switch (collectablesGeneration)
         {
             case CollectableGeneration.random: ActivateCollectablesRandomly();
                 break;
             case CollectableGeneration.inOrder: ActivateCollectablesInOrder();
                 break;
-
         }
     }
     void ActivateCollectablesRandomly()
     {
-        if (randomPool.Count == 5)
+        if (collectablesPool.Count == 5)
         {
-            int randomIndex = Random.Range(0, randomPool.Count);
-            randomPool[randomIndex].ActivateCollectable();
+            int randomIndex = Random.Range(0, collectablesPool.Count);
+            collectablesPool[randomIndex].ActivateCollectable();
         }
         
-        if (randomPool.Count > 5)
+        if (collectablesPool.Count > 5)
         {
-            randomPool.Clear();
+            collectablesPool.Clear();
         }
     }
 
     void ActivateCollectablesInOrder()
     {
-        if (randomPool.Count == 25)
+        if (collectablesPool.Count == 25)
         {
-            foreach (Cube cube in randomPool)
+            foreach (Cube cube in collectablesPool)
             {
-                if (randomPool.IndexOf(cube) % 6 == 0)
+                if (collectablesPool.IndexOf(cube) % 6 == 0)
                 {
-                    randomPool[orderIndex].ActivateCollectable();
+                    collectablesPool[orderIndex].ActivateCollectable();
                 }
             }
         }
-        if (randomPool.Count > 25)
+        if (collectablesPool.Count > 25)
         {
-            randomPool.Clear();
+            collectablesPool.Clear();
             orderIndex = 0;
         }
     }
@@ -138,8 +137,8 @@ public class GameField : MonoBehaviour
         cube.transform.position = new Vector3(x, 0f, z);
         cube.transform.parent = transform;
         cube.name = "(x" + x + ", z" + z + " )";
-        randomPool.Add(cube);
-        Debug.Log(randomPool.Count);
+        collectablesPool.Add(cube);
+//        Debug.Log(collectablesPool.Count);
 
         ActivateCollectables();
 
@@ -154,12 +153,12 @@ public class GameField : MonoBehaviour
             Cube cube = CreateCube(currentCube.transform.position.x + 1, currentCube.transform.position.z);
             currentCube = cube;
 
-            if (currentDifficulty == Difficulty.normal)
+            if (UIController.Instance.isNormal)
             {
                 CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 1);
             }
             
-            if (currentDifficulty == Difficulty.easy)
+            if (UIController.Instance.isEasy)
             {
                 CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 1);
                 CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 2);
@@ -171,11 +170,11 @@ public class GameField : MonoBehaviour
             Cube cube = CreateCube(currentCube.transform.position.x, currentCube.transform.position.z + 1);
             currentCube = cube;
 
-            if (currentDifficulty == Difficulty.normal)
+            if (UIController.Instance.isNormal)
             {
                 CreateCube(currentCube.transform.position.x - 1, currentCube.transform.position.z);
             }
-            if (currentDifficulty == Difficulty.easy)
+            if (UIController.Instance.isEasy)
             {
                 CreateCube(currentCube.transform.position.x - 1, currentCube.transform.position.z);
                 CreateCube(currentCube.transform.position.x - 2, currentCube.transform.position.z);
@@ -207,7 +206,8 @@ public class GameField : MonoBehaviour
     private void ResetGame()
     {
         cubePool.Clear();
-        SetStartingCubes();
+        collectablesPool.Clear();
         orderIndex = 0;
+        SetStartingCubes();
     }
 }

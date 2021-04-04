@@ -5,8 +5,8 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     [SerializeField] float moveSpeed = 3f;
-    public bool isAlive = true;
-
+    
+    bool isAlive = true;
     Vector3 direction;
     CollectablesController collectablesController;
 
@@ -31,9 +31,24 @@ public class Player : MonoBehaviour
     {
         direction = Vector3.zero;
         collectablesController = FindObjectOfType<CollectablesController>();
+        UIController.onStartGame += SetPlayerActive;
     }
 
     void Update()
+    {
+        if (UIController.Instance.gameStarted)
+        {
+            Move();
+        }
+
+        if (transform.position.y < 1)
+        {
+            isAlive = false;
+            UIController.Instance.ShowGameOverScreen();
+        }
+    }
+
+    private void Move()
     {
         transform.Translate(direction * moveSpeed * Time.deltaTime);
 
@@ -50,10 +65,6 @@ public class Player : MonoBehaviour
                 transform.position = new Vector3(0f, 1.75f, 0f);
                 isAlive = true;
             }
-        }
-        if (transform.position.y < 1)
-        {
-            isAlive = false;
         }
     }
 
@@ -77,4 +88,14 @@ public class Player : MonoBehaviour
             collectablesController.AddCollectable();
         }
     }    
+
+    public bool IsAlive()
+    {
+        return isAlive;
+    }
+
+    void SetPlayerActive()
+    {
+        GetComponent<Rigidbody>().isKinematic = false;
+    }
 }

@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -13,6 +12,20 @@ public class Player : MonoBehaviour
 
     public delegate void GameOver();
     public static event GameOver onGameOver;
+
+    static Player instance;
+
+    public static Player Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindObjectOfType<Player>();
+            }
+            return instance;
+        }
+    }
 
     void Start()
     {
@@ -34,7 +47,7 @@ public class Player : MonoBehaviour
             {
                 onGameOver();
                 direction = Vector3.zero;
-                transform.position = new Vector3(-3f, 1.75f, -2f);
+                transform.position = new Vector3(0f, 1.75f, 0f);
                 isAlive = true;
             }
         }

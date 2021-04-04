@@ -430,10 +430,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6ffa60ae22fad74185ed0fc13d62403, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentDifficulty: 2
+  currentType: 0
   cubePrefab: {fileID: 9167729176003532713, guid: e45db5f75fb862d4a98c35fed59efc0a,
     type: 3}
   cubePool: []
   cubeIndex: 0
+  randomPool: []
 --- !u!4 &1145300010
 Transform:
   m_ObjectHideFlags: 0
@@ -503,7 +506,7 @@ PrefabInstance:
     - target: {fileID: 2562257679642609954, guid: 3ad7b9056968b7a4d8350474f0a7a0cd,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2562257679642609954, guid: 3ad7b9056968b7a4d8350474f0a7a0cd,
         type: 3}
@@ -513,7 +516,7 @@ PrefabInstance:
     - target: {fileID: 2562257679642609954, guid: 3ad7b9056968b7a4d8350474f0a7a0cd,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2562257679642609954, guid: 3ad7b9056968b7a4d8350474f0a7a0cd,
         type: 3}
@@ -569,13 +572,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4250898512544315806}
-  m_LocalRotation: {x: 0.16042991, y: 0.37686962, z: -0.066452235, w: 0.9098438}
-  m_LocalPosition: {x: -7.5, y: 4.5, z: -6.5}
+  m_LocalRotation: {x: 0.11829687, y: 0.41900265, z: -0.05516273, w: 0.8985542}
+  m_LocalPosition: {x: -12.5, y: 6, z: -10.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 20, y: 45, z: 0}
+  m_LocalEulerAnglesHint: {x: 15, y: 50, z: 0}
 --- !u!20 &4250898512544315804
 Camera:
   m_ObjectHideFlags: 0

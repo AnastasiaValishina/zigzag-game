@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 public class GameField : MonoBehaviour
@@ -11,13 +10,21 @@ public class GameField : MonoBehaviour
         normal,
         hard
     }
+    [SerializeField] Difficulty currentDifficulty;
 
-    public Difficulty currentDifficulty;
+    public enum CollectableGeneration
+    {
+        random,
+        inOrder
+    }
+    [SerializeField] CollectableGeneration currentType;
 
     [SerializeField] Cube cubePrefab;
     public List<Cube> cubePool;
     public int cubeIndex = 0;
+    public List<Cube> randomPool;
 
+    int orderIndex = 0;
     Cube currentCube;
     static GameField instance;
 
@@ -33,36 +40,32 @@ public class GameField : MonoBehaviour
         }
     }
 
-    private void Reset()
+    void Start()
     {
-        cubePool.Clear();
         SetStartingCubes();
+        Player.onGameOver += ResetGame;
     }
 
     private void SetStartingCubes()
     {
         cubePool = PregenerateCubePool(30);
 
-        Cube startingPlatform = CreateCubeAt(-2, -1);
-        startingPlatform.gameObject.SetActive(true);
-        startingPlatform.transform.localScale = new Vector3(3, 3, 3);
+        // Создать стартовую платформу
+        for (int x = 0; x < 3; x++)
+        {
+            for (int z = 0; z < 3; z++)
+            {
+                Cube cube = CreateCube(x, z);
+                currentCube = cube;
+            }
+        }
 
-        CreateCubeAt(0, 0);
-
-        /*   for (int i = 0; i < 6; i++)
+           for (int i = 0; i < 20; i++)
            {
-               CreateFiveCubes();
-           }*/
-        GenerateFiveOfFive();
+               CreateCubeInRandomDirection();
+           }
     }
 
-    void Start()
-    {
-
-        SetStartingCubes();
-
-        Player.onGameOver += Reset;
-    }
 
     List<Cube> PregenerateCubePool(int amountOfCubes)
     {
@@ -76,66 +79,58 @@ public class GameField : MonoBehaviour
         return cubePool;
     }
 
-    public Cube[] CreateFiveCubes()
+    void ActivateCollectables()
     {
-        Cube[] cubeArray = new Cube[5];
-
-        for (int i = 0; i < cubeArray.Length; i++)
+        switch (currentType)
         {
-            Cube cube = CreateCubeInRandomDirection();
-            cubeArray[i] = cube;
+            case CollectableGeneration.random: ActivateCollectablesRandomly();
+                break;
+            case CollectableGeneration.inOrder: ActivateCollectablesInOrder();
+                break;
+
         }
-
-
-
-
-      //  int randomIndex = Random.Range(0, cubeArray.Length);
-      //  cubeArray[randomIndex].ActivateCollectable();
-
-        return cubeArray;
     }
-
-    public void PutCristalsInSequence(int i)
+    void ActivateCollectablesRandomly()
     {
-        int index = 0;
-        Cube[] cubeArray = CreateFiveCubes();
-        switch (i)
+        if (randomPool.Count == 5)
         {
-            case 0: cubeArray[0].ActivateCollectable();
-                index++;
-                break;
-            case 1: cubeArray[1].ActivateCollectable();
-                index++;
-                break;
-            case 2: cubeArray[2].ActivateCollectable();
-                index++;
-                break;
-            case 3: cubeArray[3].ActivateCollectable();
-                index++;
-                break;
-            case 4: cubeArray[4].ActivateCollectable();
-                index++;
-                break;
+            int randomIndex = Random.Range(0, randomPool.Count);
+            randomPool[randomIndex].ActivateCollectable();
+        }
+        
+        if (randomPool.Count > 5)
+        {
+            randomPool.Clear();
         }
     }
 
-    public void GenerateFiveOfFive()
+    void ActivateCollectablesInOrder()
     {
-        for (int i = 0; i < 5; i++)
+        if (randomPool.Count == 25)
         {
-            PutCristalsInSequence(i);
+            foreach (Cube cube in randomPool)
+            {
+                if (randomPool.IndexOf(cube) % 6 == 0)
+                {
+                    randomPool[orderIndex].ActivateCollectable();
+                }
+            }
+        }
+        if (randomPool.Count > 25)
+        {
+            randomPool.Clear();
+            orderIndex = 0;
         }
     }
-
-
-    Cube CreateCubeAt(float x, float z)
+ 
+ /*   Cube CreateCurrentCubeAt(float x, float z)
     {
         Cube cube = CreateCube(x, z);
  
         currentCube = cube;
 
         return cube;
-    }
+    }*/
 
     public Cube CreateCube(float x, float z)
     {
@@ -143,25 +138,28 @@ public class GameField : MonoBehaviour
         cube.transform.position = new Vector3(x, 0f, z);
         cube.transform.parent = transform;
         cube.name = "(x" + x + ", z" + z + " )";
-        cube.orderNumber = cubeIndex;
-        cubeIndex++;
-        if (cubeIndex == 5) { cubeIndex = 0; }
+        randomPool.Add(cube);
+        Debug.Log(randomPool.Count);
+
+        ActivateCollectables();
 
         return cube;
     }
 
-    Cube CreateCubeInRandomDirection()
+    public Cube CreateCubeInRandomDirection()
     {
         int randomDirectionIndex = Random.Range(0, 2);
         if (randomDirectionIndex == 0)
         {
-            Cube cube = CreateCubeAt(currentCube.transform.position.x + 1, currentCube.transform.position.z);
+            Cube cube = CreateCube(currentCube.transform.position.x + 1, currentCube.transform.position.z);
+            currentCube = cube;
+
             if (currentDifficulty == Difficulty.normal)
             {
                 CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 1);
             }
             
-            if (currentDifficulty == Difficulty.hard)
+            if (currentDifficulty == Difficulty.easy)
             {
                 CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 1);
                 CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 2);
@@ -170,20 +168,19 @@ public class GameField : MonoBehaviour
         }
         else if (randomDirectionIndex == 1)
         {
-            Cube cube = CreateCubeAt(currentCube.transform.position.x, currentCube.transform.position.z + 1);
+            Cube cube = CreateCube(currentCube.transform.position.x, currentCube.transform.position.z + 1);
+            currentCube = cube;
+
             if (currentDifficulty == Difficulty.normal)
             {
                 CreateCube(currentCube.transform.position.x - 1, currentCube.transform.position.z);
             }
-            if (currentDifficulty == Difficulty.hard)
+            if (currentDifficulty == Difficulty.easy)
             {
                 CreateCube(currentCube.transform.position.x - 1, currentCube.transform.position.z);
                 CreateCube(currentCube.transform.position.x - 2, currentCube.transform.position.z);
             }
-            else
-            {
-                return cube;
-            }
+            return cube;
         }
         return null;
     }
@@ -205,5 +202,12 @@ public class GameField : MonoBehaviour
         cubePool.Add(newCube);
 
         return newCube;
+    }
+
+    private void ResetGame()
+    {
+        cubePool.Clear();
+        SetStartingCubes();
+        orderIndex = 0;
     }
 }

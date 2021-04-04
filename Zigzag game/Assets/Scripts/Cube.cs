@@ -6,35 +6,29 @@ public class Cube : MonoBehaviour
 {
     [SerializeField] float fallingDelay = 1f;
     [SerializeField] GameObject collectable;
-    public int orderNumber;
+    [SerializeField] float offset = 2f;
 
     private void Start()
     {
-        Player.onGameOver += Reset;
-    }
-
-    private void Reset()
-    {
-        GetComponent<Rigidbody>().isKinematic = true;
-        transform.localScale = new Vector3(1f, 3f, 1f);
-        gameObject.SetActive(false);
+        Player.onGameOver += RecycleCube;
     }
 
     void Update()
     {
-        
+        if (Player.Instance.transform.position.x > transform.position.x &&
+            Player.Instance.transform.position.z > transform.position.z)
+        {
+            StartCoroutine(FallDown());
+        }
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (other.tag == "Player")
         {
-            if (orderNumber == 0)
-            {
-                GameField.Instance.GenerateFiveOfFive();
-
-            }
-            StartCoroutine(FallDown());
+   //         GameField.Instance.CreateCubeInRandomDirection();
+    //        GameField.Instance.ActivateCollectablesRandomly();
+           //GameField.Instance.ActivateCollectablesInOrder();
         }
     }
 
@@ -43,8 +37,13 @@ public class Cube : MonoBehaviour
         yield return new WaitForSeconds(fallingDelay);
         GetComponent<Rigidbody>().isKinematic = false;
         yield return new WaitForSeconds(fallingDelay);
+        RecycleCube();
+    }
+
+    private void RecycleCube()
+    {
         GetComponent<Rigidbody>().isKinematic = true;
-        transform.localScale = new Vector3(1f, 3f, 1f);
+        GameField.Instance.CreateCubeInRandomDirection(); // создать новый куб
         gameObject.SetActive(false);
     }
 

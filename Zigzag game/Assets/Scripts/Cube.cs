@@ -1,17 +1,17 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Cube : MonoBehaviour
 {
     [SerializeField] float fallingDelay = 1f;
     [SerializeField] GameObject collectable;
-    [SerializeField] float offset = 2f;
 
-    private void Start()
+    public enum CubeType
     {
-        Player.onGameOver += RecycleCube;
+        trail,   // "ведущий" куб, относительно которого генерируется дорожка
+        adjacent // соседний куб генерируется вместе в ведущим для сохранения ширины дорожки
     }
+    public CubeType cubeType;
 
     void Update()
     {
@@ -22,28 +22,28 @@ public class Cube : MonoBehaviour
         }
     }
 
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.tag == "Player")
-        {
-   //         GameField.Instance.CreateCubeInRandomDirection();
-    //        GameField.Instance.ActivateCollectablesRandomly();
-           //GameField.Instance.ActivateCollectablesInOrder();
-        }
-    }
-
     IEnumerator FallDown()
     {
         yield return new WaitForSeconds(fallingDelay);
         GetComponent<Rigidbody>().isKinematic = false;
         yield return new WaitForSeconds(fallingDelay);
+        CreateNewCube();
         RecycleCube();
     }
 
-    private void RecycleCube()
+    private void CreateNewCube()             // создать новый куб вместо упавшего
+    {
+        if (cubeType == CubeType.trail)
+        {
+            GameField.Instance.CreateCubeInRandomDirection();
+        }
+    }
+
+    public void RecycleCube() // вернуть куб в пул кубов для повторного использования
     {
         GetComponent<Rigidbody>().isKinematic = true;
-        GameField.Instance.CreateCubeInRandomDirection(); // создать новый куб
+        cubeType = CubeType.trail;
+        collectable.SetActive(false);
         gameObject.SetActive(false);
     }
 

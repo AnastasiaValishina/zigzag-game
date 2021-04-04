@@ -4,26 +4,17 @@ using UnityEngine;
 
 public class GameField : MonoBehaviour
 {
- /*   public enum Difficulty
-    {
-        easy,
-        normal,
-        hard
-    }
-    public  Difficulty currentDifficulty;*/
-
-    public enum CollectableGeneration
+    public enum CollectableGeneration // правило, по которому расставляются кристаллы, выбирается в инспекторе
     {
         random,
         inOrder
-    }
+    } 
     [SerializeField] CollectableGeneration collectablesGeneration;
 
     [SerializeField] Cube cubePrefab;
     
-    public List<Cube> cubePool;
-    public List<Cube> collectablesPool;
-    int orderIndex = 0;
+    public List<Cube> cubePool; // список кубов для повторного использования
+    public List<Cube> collectablesPool; // список кубов для расстановки кристаллов
     Cube currentCube;
     static GameField instance;
     public static GameField Instance
@@ -40,16 +31,14 @@ public class GameField : MonoBehaviour
 
     void Start()
     {
-    //    SetStartingCubes();
         Player.onGameOver += ResetGame;
+        Player.onGameOver += SetStartingCubes;
         UIController.onStartGame += SetStartingCubes;
-
+        cubePool = PregenerateCubePool(60);
     }
 
     private void SetStartingCubes()
     {
-        cubePool = PregenerateCubePool(30);
-
         // Создать стартовую платформу
         for (int x = 0; x < 3; x++)
         {
@@ -57,17 +46,18 @@ public class GameField : MonoBehaviour
             {
                 Cube cube = CreateCube(x, z);
                 currentCube = cube;
+                cube.gameObject.SetActive(true);
+                collectablesPool.Clear();
             }
         }
-
-        for (int i = 0; i < 20; i++)
+        // создать начало дорожки
+        for (int i = 0; i < 50; i++)
         {
            CreateCubeInRandomDirection();
         }
     }
 
-
-    List<Cube> PregenerateCubePool(int amountOfCubes)
+    List<Cube> PregenerateCubePool(int amountOfCubes) // создать пул кубов, которые будут повторно использоваться в игре 
     {
         for (int i = 0; i < amountOfCubes; i++) 
         {
@@ -77,9 +67,30 @@ public class GameField : MonoBehaviour
             cubePool.Add(cube);
         }
         return cubePool;
+    } 
+
+    Cube RequestCubeFromPool()
+    {
+        // вытащить куб из пула
+        foreach (var cube in cubePool)
+        {
+            if (cube.gameObject.activeInHierarchy == false)
+            {
+                cube.gameObject.SetActive(true);
+                return cube;
+            }
+        }
+
+        // если свободного куба, создать новый
+        Cube newCube = Instantiate(cubePrefab);
+        newCube.transform.parent = transform;
+        newCube.gameObject.SetActive(true);
+        cubePool.Add(newCube);
+
+        return newCube;
     }
 
-    void ActivateCollectables()
+    void ActivateCollectables() 
     {
         switch (collectablesGeneration)
         {
@@ -89,21 +100,17 @@ public class GameField : MonoBehaviour
                 break;
         }
     }
-    void ActivateCollectablesRandomly()
+    void ActivateCollectablesRandomly() // кристаллы расставляются случайным образом
     {
         if (collectablesPool.Count == 5)
         {
             int randomIndex = Random.Range(0, collectablesPool.Count);
             collectablesPool[randomIndex].ActivateCollectable();
-        }
-        
-        if (collectablesPool.Count > 5)
-        {
             collectablesPool.Clear();
         }
     }
 
-    void ActivateCollectablesInOrder()
+    void ActivateCollectablesInOrder() // кристаллы расставляются по порядку
     {
         if (collectablesPool.Count == 25)
         {
@@ -111,41 +118,27 @@ public class GameField : MonoBehaviour
             {
                 if (collectablesPool.IndexOf(cube) % 6 == 0)
                 {
-                    collectablesPool[orderIndex].ActivateCollectable();
+                    collectablesPool[collectablesPool.IndexOf(cube)].ActivateCollectable();
                 }
             }
-        }
-        if (collectablesPool.Count > 25)
-        {
             collectablesPool.Clear();
-            orderIndex = 0;
         }
     }
  
- /*   Cube CreateCurrentCubeAt(float x, float z)
-    {
-        Cube cube = CreateCube(x, z);
- 
-        currentCube = cube;
-
-        return cube;
-    }*/
-
     public Cube CreateCube(float x, float z)
     {
         Cube cube = RequestCubeFromPool();
         cube.transform.position = new Vector3(x, 0f, z);
         cube.transform.parent = transform;
         cube.name = "(x" + x + ", z" + z + " )";
-        collectablesPool.Add(cube);
-//        Debug.Log(collectablesPool.Count);
-
+        collectablesPool.Add(cube); 
+         
         ActivateCollectables();
 
         return cube;
     }
 
-    public Cube CreateCubeInRandomDirection()
+    public Cube CreateCubeInRandomDirection() // создать дорожку в случайном направлении шириной в 1, 2 или 3 куба
     {
         int randomDirectionIndex = Random.Range(0, 2);
         if (randomDirectionIndex == 0)
@@ -153,15 +146,18 @@ public class GameField : MonoBehaviour
             Cube cube = CreateCube(currentCube.transform.position.x + 1, currentCube.transform.position.z);
             currentCube = cube;
 
-            if (UIController.Instance.isNormal)
+            if (UIController.Instance.IsNormal())
             {
-                CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 1);
+                Cube adjacentCube = CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 1);
+                adjacentCube.cubeType = Cube.CubeType.adjacent;
             }
             
-            if (UIController.Instance.isEasy)
+            if (UIController.Instance.IsEasy())
             {
-                CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 1);
-                CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 2);
+                Cube adjacentCube1 = CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 1);
+                Cube adjacentCube2 = CreateCube(currentCube.transform.position.x, currentCube.transform.position.z - 2);
+                adjacentCube1.cubeType = Cube.CubeType.adjacent;
+                adjacentCube2.cubeType = Cube.CubeType.adjacent;
             }
             return cube;
         }
@@ -170,44 +166,30 @@ public class GameField : MonoBehaviour
             Cube cube = CreateCube(currentCube.transform.position.x, currentCube.transform.position.z + 1);
             currentCube = cube;
 
-            if (UIController.Instance.isNormal)
+            if (UIController.Instance.IsNormal())
             {
-                CreateCube(currentCube.transform.position.x - 1, currentCube.transform.position.z);
+                Cube adjacentCube3 = CreateCube(currentCube.transform.position.x - 1, currentCube.transform.position.z);
+                adjacentCube3.cubeType = Cube.CubeType.adjacent;
             }
-            if (UIController.Instance.isEasy)
+            if (UIController.Instance.IsEasy())
             {
-                CreateCube(currentCube.transform.position.x - 1, currentCube.transform.position.z);
-                CreateCube(currentCube.transform.position.x - 2, currentCube.transform.position.z);
+                Cube adjacentCube4 = CreateCube(currentCube.transform.position.x - 1, currentCube.transform.position.z);
+                Cube adjacentCube5 = CreateCube(currentCube.transform.position.x - 2, currentCube.transform.position.z);
+                adjacentCube4.cubeType = Cube.CubeType.adjacent;
+                adjacentCube5.cubeType = Cube.CubeType.adjacent;
             }
             return cube;
         }
         return null;
     }
 
-    Cube RequestCubeFromPool()
-    {
-        foreach(var cube in cubePool)
-        {
-            if (cube.gameObject.activeInHierarchy == false)
-            {
-                cube.gameObject.SetActive(true);
-                return cube;
-            }
-        }
-
-        Cube newCube = Instantiate(cubePrefab);
-        newCube.transform.parent = transform;
-        newCube.gameObject.SetActive(true);
-        cubePool.Add(newCube);
-
-        return newCube;
-    }
-
     private void ResetGame()
     {
-        cubePool.Clear();
         collectablesPool.Clear();
-        orderIndex = 0;
-        SetStartingCubes();
+
+        foreach (Cube cube in cubePool)
+        {
+            cube.RecycleCube();
+        }
     }
 }

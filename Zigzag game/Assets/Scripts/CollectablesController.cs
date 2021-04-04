@@ -1,11 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CollectablesController : MonoBehaviour
 {
     [SerializeField] int collectableValue = 1;
-    int totalAmount;
+    int totalAmount = 0;
 
     static CollectablesController instance;
 

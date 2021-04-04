@@ -1,24 +1,30 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
-    [SerializeField] Text score;
-    [SerializeField] GameObject gameOverScreen;
     [SerializeField] GameObject startScreen;
-//    [SerializeField] Text tapToStartText;
+    [SerializeField] GameObject gameOverScreen;
+    [SerializeField] Text totalScore;
+    [SerializeField] Text score;
 
     [Header("Difficulty Toggles")]
     [SerializeField] Toggle toggleEasy;
     [SerializeField] Toggle toggleNormal;
     [SerializeField] Toggle toggleHard;
 
-    public bool isEasy = false;
-    public bool isNormal = false;
-    public bool isHard = true;
-    public bool gameStarted = false;
+    bool isEasy = false;
+    bool isNormal = false;
+    bool isHard = true;
+    bool gameStarted = false;
+
+    public enum Difficulty
+    {
+        easy,
+        normal,
+        hard
+    }
+    public Difficulty currentDifficulty;
 
     public delegate void StartGame();
     public static event StartGame onStartGame;
@@ -50,6 +56,7 @@ public class UIController : MonoBehaviour
     public void ShowGameOverScreen()
     {
         gameOverScreen.SetActive(true);
+        totalScore.text = "Total score: " + CollectablesController.Instance.GetTotalScore().ToString();
     }
 
     void HideGameOverScreen()
@@ -62,11 +69,10 @@ public class UIController : MonoBehaviour
         score.text = CollectablesController.Instance.GetTotalScore().ToString();
     }
 
-    public void OnStartClick()
+    public void OnStartClick() // кнопка "Старт"
     {
         SetDifficulty();
         startScreen.SetActive(false);
- //       tapToStartText.gameObject.SetActive(true);
         gameStarted = true;
         onStartGame();
     }
@@ -86,28 +92,33 @@ public class UIController : MonoBehaviour
         isHard = newValue;
     }
 
-    public enum Difficulty
-    {
-        easy,
-        normal,
-        hard
-    }
-    public Difficulty currentDifficulty;
-
     public void SetDifficulty()
     {
-        switch (currentDifficulty)
+        if (isEasy == true)
         {
-            case Difficulty.easy:
-                isEasy = true;
-                break;
-            case Difficulty.normal:
-                isNormal = true;
-                break;
-            case Difficulty.hard:
-                isHard = true;
-                break;
+            currentDifficulty = Difficulty.easy;
+        }
+        if (isNormal == true)
+        {
+            currentDifficulty = Difficulty.normal;
+        }
+        if (isHard == true)
+        {
+            currentDifficulty = Difficulty.hard;
         }
     }
 
+    public bool IsGameStarted()
+    {
+        return gameStarted;
+    }
+
+    public bool IsEasy()
+    {
+        return isEasy;
+    }
+    public bool IsNormal()
+    {
+        return isNormal;
+    }
 }

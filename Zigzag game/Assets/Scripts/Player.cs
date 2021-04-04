@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Player : MonoBehaviour
 {
@@ -36,12 +34,12 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        if (UIController.Instance.gameStarted)
+        if (UIController.Instance.IsGameStarted())
         {
             Move();
         }
 
-        if (transform.position.y < 1)
+        if (transform.position.y < 1.5f)
         {
             isAlive = false;
             UIController.Instance.ShowGameOverScreen();

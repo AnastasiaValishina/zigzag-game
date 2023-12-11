@@ -1,3 +1,3 @@
-# zigzag-game
+# Hyper-casual game ZigZag
 
-Тестовое задание на вакансию Unity разработчика. Игра ZigZag.
+Test task for a position of a Unity developer.
